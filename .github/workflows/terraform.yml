@@ -1,0 +1,224 @@
+name: terraform deployment
+
+on:
+  push:
+    branches: [main]
+
+
+permissions:
+  id-token: write # required for OIDC.
+  contents: read
+
+# Never run two Terraform jobs against the same state at once
+concurrency:
+  group: terraform-eks
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: eu-west-2
+  TF_VERSION: 1.16.5
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  init:
+    name: terraform init & validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: terraform init
+        run: terraform init
+
+      - name: terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: terraform validate
+        run: terraform validate
+
+# # #   # ---------------------------------------------------------------------------
+#   tfsec:
+#     name: security scan (tfsec) Phase(1)
+#     needs: [init]
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v7
+
+#       - name: tfsec
+#         uses: aquasecurity/tfsec-action@v1.0.3
+#         with:
+#           soft_fail: true
+
+#   sonar-scan:
+#     name: security scan (sonar-scan) Phase(2)
+#     needs: [tfsec]
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0 # Disable shallow clone  for  accurate analysis.
+
+#       - name: SonarQube Scan
+#         uses: SonarSource/sonarqube-scan-action@v5
+#         continue-on-error: true
+#         env:
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#         with:
+#           args: >
+#             -Dsonar.projectKey=terraform-infra
+#             -Dsonar.projectName="Terraform Infra"
+#             -Dsonar.exclusions=**/.terraform/**,**/*.tfstate
+#             -Dsonar.qualitygate.wait=true
+
+# # #   # ---------------------------------------------------------------------------
+  # plan-apply:
+  #   name: terraform plan and apply
+  #   #needs: [sonar-scan]  
+  #   if: ${{ !inputs.destroy }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
+
+  #     - uses: hashicorp/setup-terraform@v4
+  #       with:
+  #         terraform_version: ${{ env.TF_VERSION }}
+  #         terraform_wrapper: false
+
+  #     - uses: aws-actions/configure-aws-credentials@v6
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
+  #         aws-region: ${{ env.AWS_REGION }}
+
+  #     - name: terraform init
+  #       run: terraform init
+
+  #     - name: terraform plan
+  #       run: terraform plan -out=tfplan
+
+  #     - name: terraform apply
+  #       run: terraform apply -auto-approve tfplan
+
+# # #   # ---------------------------------------------------------------------------
+#   test:
+#     name: verify deployment
+#     # needs: [plan-apply]
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v7
+
+#       - uses: hashicorp/setup-terraform@v4
+#         with:
+#           terraform_version: ${{ env.TF_VERSION }}
+#           terraform_wrapper: false
+
+#       - uses: aws-actions/configure-aws-credentials@v6
+#         with:
+#           role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
+#           aws-region: ${{ env.AWS_REGION }}
+
+#       - name: Read Terraform outputs
+#         id: tf
+#         run: |
+#           terraform init
+#           echo "cluster=$(terraform output -raw eks_cluster_name)" >> "$GITHUB_OUTPUT"
+#           echo "kubeconfig_uri=$(terraform output -raw kubeconfig_s3_uri)" >> "$GITHUB_OUTPUT"
+
+#       - name: Cluster is ACTIVE
+#         run: |
+#           status=$(aws eks describe-cluster --name "${{ steps.tf.outputs.cluster }}" --query cluster.status --output text)
+#           echo "EKS status: $status"
+#           test "$status" = "ACTIVE"
+
+#       - name: Connect kubectl
+#         run: aws eks update-kubeconfig --region "$AWS_REGION" --name "${{ steps.tf.outputs.cluster }}"
+
+#       - name: Nodes are Ready
+#         run: |
+#           kubectl wait --for=condition=Ready nodes --all --timeout=300s
+#           kubectl get nodes -o wide
+
+#       - name: cert-manager is running
+#         run: kubectl -n cert-manager rollout status deployment --timeout=300s
+
+#       - name: ClusterIssuer is Ready
+#         run: |
+#           kubectl wait --for=condition=Ready clusterissuer --all --timeout=180s
+#           kubectl get clusterissuer
+
+#       - name: NGINX ingress controller is running
+#         run: kubectl -n nginx-ingress rollout status deployment --timeout=300s
+
+#       - name: Load balancer has a hostname
+#         run: |
+#           lb=$(kubectl -n nginx-ingress get svc nginx-ingress-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+#           echo "Load balancer: $lb"
+#           test -n "$lb"
+
+#       - name: Argo CD is running
+#         run: |
+#           kubectl -n argocd rollout status deployment --timeout=300s
+#           kubectl -n argocd rollout status statefulset --timeout=300s
+#           kubectl -n argocd get pods
+
+#       - name: EFS CSI driver and StorageClass exist
+#         run: |
+#           kubectl -n kube-system rollout status deployment/efs-csi-controller --timeout=300s
+#           kubectl get storageclass efs-sc
+
+#       - name: kubeconfig is in S3
+#         run: aws s3 ls "${{ steps.tf.outputs.kubeconfig_uri }}"
+
+# # After creating a record with AWS loadbalancer to namecheap
+# # for your argocd, then you can run this part. 
+#       - name: Argo CD is running
+#         run: |
+#           kubectl apply -f manifests/argocd-ingress.yaml
+#           kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+
+
+
+      # - name: create the secrets
+      #   run: | 
+      #     bash create-secret.sh
+      #     kubectl -n ai-assistant create secret generic ai-secrets --from-literal=LLM_API_KEY=<your-AIza-key>
+        
+  # ---------------------------------------------------------------------------
+  # DESTROY — commented out on purpose. To tear everything down, an admin
+  # uncomments this job, pushes, then runs the workflow manually with
+  # "destroy" ticked (Actions → terraform deployment → Run workflow).
+  # plan-apply and test are skipped on that run. Comment it out again afterwards.
+  # ---------------------------------------------------------------------------
+  # destroy:
+  #   name: terraform destroy
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
+  
+  #     - uses: hashicorp/setup-terraform@v4
+  #       with:
+  #         terraform_version: ${{ env.TF_VERSION }}
+  #         terraform_wrapper: false
+  
+  #     - uses: aws-actions/configure-aws-credentials@v6
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
+  #         aws-region: ${{ env.AWS_REGION }}
+  
+  #     - name: terraform init
+  #       run: terraform init
+  
+  #     - name: terraform destroy
+  #       run: terraform destroy -auto-approve

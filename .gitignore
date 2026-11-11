@@ -22,5 +22,6 @@ kubeconfig
 *.kubeconfig
 .claude
 
-*Infrastructure-SetUp.md*
-*SonarQube-StepUp.md*
+# *Infrastructure-SetUp.md*
+# *SonarQube-StepUp.md*
+# *Domain-SetUp.md*

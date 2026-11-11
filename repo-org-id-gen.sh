@@ -5,7 +5,7 @@ echo
 export GH_TOKEN
 
 ORG="POD5-DevOps-Team-DGWIT"
-REPO="Ecommerce-Project-Infrastructure-DGWI"
+REPO="Ecommerce-Project-IaC-DGWI"
 
 # Get Organization ID
 ORG_RESPONSE=$(curl -fsSL \

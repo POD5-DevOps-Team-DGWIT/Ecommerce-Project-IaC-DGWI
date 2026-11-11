@@ -182,7 +182,7 @@ variable "efs_transition_to_ia" {
 variable "kubeconfig_bucket" {
   description = "S3 bucket where the admin kubeconfig is uploaded"
   type        = string
-  default     = "pod5-state-bucket-916657620282"  #CHANGES WERE MADE BY HAND
+  default     = "pod5-state-bucket-916657620282"  #CHANGES WERE MADE
 }
 
 variable "kubeconfig_s3_key" {

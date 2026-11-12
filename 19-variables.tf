@@ -8,14 +8,14 @@ variable "aws_region" {
 variable "cluster_name" {
   description = "Name of the EKS cluster; also used as a prefix for related resources"
   type        = string
-  default     = "POD5-eks"  #CHANGES WERE MADE
+  default     = "POD5-eks" #CHANGES WERE MADE
 }
 
 # ---- Networking ----
 variable "vpc_name" {
-  description = "Name tag of the VPC" 
+  description = "Name tag of the VPC"
   type        = string
-  default     = "POD5-vpc"    #CHANGES WERE MADE
+  default     = "POD5-vpc" #CHANGES WERE MADE
 }
 
 variable "vpc_cidr" {
@@ -68,7 +68,7 @@ variable "cluster_endpoint_public_access_cidrs" {
 variable "cluster_admin_arns" {
   description = "Extra IAM users/roles that get cluster-admin. The identity that runs terraform apply (the GitHub OIDC role) is admin automatically, so do NOT list it here."
   type        = list(string)
-  default     = ["arn:aws:iam::916657620282:role/pod5-githubaction-terraform"]  #CHANGES WERE MADE BY HAND
+  default     = ["arn:aws:iam::916657620282:role/pod5-githubaction-terraform"] #CHANGES WERE MADE BY HAND
 }
 
 # ---- Worker nodes ----
@@ -161,14 +161,14 @@ variable "letsencrypt_server" {
 variable "letsencrypt_email" {
   description = "Optional contact email for the Let's Encrypt account"
   type        = string
-  default     = "whoami.iamubuntu@gmail.com"    #CHANGES WERE MADE BY HAND
+  default     = "whoami.iamubuntu@gmail.com" #CHANGES WERE MADE BY HAND
 }
 
 # ---- Argo CD ----
 variable "argocd_hostname" {
   description = "Public hostname for the Argo CD UI (must match manifests/argocd-ingress.yaml)"
   type        = string
-  default     = "argocd.pod5ecomm.store"  #CHANGES WERE MADE BY HAND
+  default     = "argocd.pod5ecomm.store" #CHANGES WERE MADE BY HAND
 }
 
 # ---- EFS ----
@@ -182,7 +182,7 @@ variable "efs_transition_to_ia" {
 variable "kubeconfig_bucket" {
   description = "S3 bucket where the admin kubeconfig is uploaded"
   type        = string
-  default     = "pod5-state-bucket-916657620282"  #CHANGES WERE MADE
+  default     = "pod5-state-bucket-916657620282" #CHANGES WERE MADE
 }
 
 variable "kubeconfig_s3_key" {

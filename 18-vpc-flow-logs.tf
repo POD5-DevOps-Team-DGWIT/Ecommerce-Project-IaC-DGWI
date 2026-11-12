@@ -2,7 +2,7 @@ resource "aws_flow_log" "flow_log" {
   iam_role_arn    = aws_iam_role.flow_log.arn
   log_destination = aws_cloudwatch_log_group.flow_log.arn
   traffic_type    = "ALL"
-  vpc_id          = aws_vpc.vpc.id 
+  vpc_id          = aws_vpc.vpc.id
 
   tags = {
     Name = "pod5_flow_log" #Your desired name for your vpc, A label you can see on the console.

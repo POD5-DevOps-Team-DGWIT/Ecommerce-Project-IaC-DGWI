@@ -159,11 +159,11 @@ Role name used in the project:
 
 ### Trust policy example
 
-Go to = <https://github.com/Organisation_Name/Repo_Name/settings/actions/oidc-configuration
+Go to = <https://github.com/POD5-DevOps-Team-DGWIT/Ecommerce-Project-IaC-DGWI/settings/actions/oidc-configuration
 
 Copy this <repo:Org_Name@Token/Repo_Name@Token
 
-The trust policy should look like this:
+Go to your AWS IAM role you created and paste the repo line to edit the `Role  Trust policy:` which tells AWS which repo is to be trusted.
 
 ```json
 {
@@ -188,8 +188,8 @@ The trust policy should look like this:
 }
 ```
 
-change it to this = <
->"token.actions.githubusercontent.com:sub": "repo:Organisation_name@Org_Token/Repo_Name@Repo_Token:*"
+change the `StringLike` Block to this
+>"token.actions.githubusercontent.com:sub": "repo:POD5-DevOps-Team-DGWIT@340990885/Ecommerce-Project-IaC-DGWI@1454500340:*"
 
 ### What this policy does
 

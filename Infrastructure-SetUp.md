@@ -8,7 +8,7 @@ This project is a cloud-native application infrastructure built on AWS with a 2-
 
 - VPC
 - 2 Availability Zones (AZs)
-- 2 public subnets
+- 2 public subnets & 
 - 2 private subnets
 - EKS cluster placed in the public subnets
 - Worker nodes placed in the private subnets

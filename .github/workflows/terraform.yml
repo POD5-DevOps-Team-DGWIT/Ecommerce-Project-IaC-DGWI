@@ -47,41 +47,41 @@ jobs:
       - name: terraform validate
         run: terraform validate
 
-# # #   # ---------------------------------------------------------------------------
-#   tfsec:
-#     name: security scan (tfsec) Phase(1)
-#     needs: [init]
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v7
+# #   # ---------------------------------------------------------------------------
+  tfsec:
+    name: security scan (tfsec) Phase(1)
+    needs: [init]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
 
-#       - name: tfsec
-#         uses: aquasecurity/tfsec-action@v1.0.3
-#         with:
-#           soft_fail: true
+      - name: tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          soft_fail: true
 
-#   sonar-scan:
-#     name: security scan (sonar-scan) Phase(2)
-#     needs: [tfsec]
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0 # Disable shallow clone  for  accurate analysis.
+  sonar-scan:
+    name: security scan (sonar-scan) Phase(2)
+    needs: [tfsec]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Disable shallow clone  for  accurate analysis.
 
-#       - name: SonarQube Scan
-#         uses: SonarSource/sonarqube-scan-action@v5
-#         continue-on-error: true
-#         env:
-#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-#         with:
-#           args: >
-#             -Dsonar.projectKey=terraform-infra
-#             -Dsonar.projectName="Terraform Infra"
-#             -Dsonar.exclusions=**/.terraform/**,**/*.tfstate
-#             -Dsonar.qualitygate.wait=true
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=terraform-infra
+            -Dsonar.projectName="Terraform Infra"
+            -Dsonar.exclusions=**/.terraform/**,**/*.tfstate
+            -Dsonar.qualitygate.wait=true
 
 # # #   # ---------------------------------------------------------------------------
   # plan-apply:

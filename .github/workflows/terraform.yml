@@ -195,12 +195,12 @@ jobs:
       #     bash create-secret.sh
       #     kubectl -n ai-assistant create secret generic ai-secrets --from-literal=LLM_API_KEY=<your-AIza-key>
         
-  ---------------------------------------------------------------------------
-  DESTROY — commented out on purpose. To tear everything down, an admin
-  uncomments this job, pushes, then runs the workflow manually with
-  "destroy" ticked (Actions → terraform deployment → Run workflow).
-  plan-apply and test are skipped on that run. Comment it out again afterwards.
-  ---------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # DESTROY — commented out on purpose. To tear everything down, an admin
+  # uncomments this job, pushes, then runs the workflow manually with
+  # "destroy" ticked (Actions → terraform deployment → Run workflow).
+  # plan-apply and test are skipped on that run. Comment it out again afterwards.
+  # ---------------------------------------------------------------------------
   destroy:
     name: terraform destroy
     runs-on: ubuntu-latest

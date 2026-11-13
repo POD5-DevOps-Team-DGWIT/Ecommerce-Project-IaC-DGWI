@@ -201,25 +201,25 @@ jobs:
   # "destroy" ticked (Actions → terraform deployment → Run workflow).
   # plan-apply and test are skipped on that run. Comment it out again afterwards.
   # ---------------------------------------------------------------------------
-  destroy:
-    name: terraform destroy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
+  # destroy:
+  #   name: terraform destroy
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
   
-      - uses: hashicorp/setup-terraform@v4
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-          terraform_wrapper: false
+  #     - uses: hashicorp/setup-terraform@v4
+  #       with:
+  #         terraform_version: ${{ env.TF_VERSION }}
+  #         terraform_wrapper: false
   
-      - uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+  #     - uses: aws-actions/configure-aws-credentials@v6
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
+  #         aws-region: ${{ env.AWS_REGION }}
   
-      - name: terraform init
-        run: terraform init
+  #     - name: terraform init
+  #       run: terraform init
   
-      - name: terraform destroy
-        run: terraform destroy -auto-approve
+  #     - name: terraform destroy
+  #       run: terraform destroy -auto-approve
 

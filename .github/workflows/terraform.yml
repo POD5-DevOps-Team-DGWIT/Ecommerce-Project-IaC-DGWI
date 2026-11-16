@@ -190,10 +190,10 @@ jobs:
 
 
 
-      # - name: create the secrets
-      #   run: | 
-      #     bash create-secret.sh
-      #     kubectl -n ai-assistant create secret generic ai-secrets --from-literal=LLM_API_KEY=<your-AIza-key>
+      - name: create the secrets
+        run: | 
+          bash create-secrets.sh
+          kubectl -n ai-assistant create secret generic ai-secrets --from-literal=LLM_API_KEY=<your-AIza-key>
         
   # ---------------------------------------------------------------------------
   # DESTROY — commented out on purpose. To tear everything down, an admin

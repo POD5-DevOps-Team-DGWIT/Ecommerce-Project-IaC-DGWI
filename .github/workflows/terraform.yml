@@ -1,55 +1,55 @@
-# name: terraform deployment
-# on: 
-#   push:
-#     branches: [main]
-#   workflow_dispatch:
-#     inputs:
-#       destroy:
-#         description: "Tick to destroy everything"
-#         type: boolean
-#         default: false
+name: terraform deployment
+on: 
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      destroy:
+        description: "Tick to destroy everything"
+        type: boolean
+        default: false
 
-# permissions:
-#   id-token: write # required for OIDC.
-#   contents: read
+permissions:
+  id-token: write # required for OIDC.
+  contents: read
 
-# # # Never run two Terraform jobs against the same state at once
-# concurrency:
-#   group: terraform-eks
-#   cancel-in-progress: false
+# # Never run two Terraform jobs against the same state at once
+concurrency:
+  group: terraform-eks
+  cancel-in-progress: false
 
-# env:
-#   AWS_REGION: eu-west-2
-#   TF_VERSION: 1.16.5
-#   TF_IN_AUTOMATION: "true"
-#   TF_INPUT: "false"
+env:
+  AWS_REGION: eu-west-2
+  TF_VERSION: 1.16.5
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
 
-# jobs:
-#   # ---------------------------------------------------------------------------
-#   init:
-#     name: terraform init & validate
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v7
+jobs:
+  # ---------------------------------------------------------------------------
+  init:
+    name: terraform init & validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
 
-#       - uses: hashicorp/setup-terraform@v4
-#         with:
-#           terraform_version: ${{ env.TF_VERSION }}
-#           terraform_wrapper: false
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
 
-#       - uses: aws-actions/configure-aws-credentials@v6
-#         with:
-#           role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
-#           aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
-#       - name: terraform init
-#         run: terraform init
+      - name: terraform init
+        run: terraform init
 
-#       - name: terraform fmt
-#         run: terraform fmt -check -recursive
+      - name: terraform fmt
+        run: terraform fmt -check -recursive
 
-#       - name: terraform validate
-#         run: terraform validate
+      - name: terraform validate
+        run: terraform validate
 
 #   # ---------------------------------------------------------------------------
 #   tfsec:
@@ -188,25 +188,25 @@
 #       - name: Argo CD is running
 #         run: kubectl apply -f manifests/argocd-ingress.yaml
 # # ---------------------------------------------------------------------------
-#   # DESTROY — commented out on purpose. To tear everything down, an admin uncomments this job, pushes, then runs the workflow manually with "destroy" ticked (Actions → terraform deployment → Run workflow).plan-apply and test are skipped on that run. Comment it out again afterwards.
-# # ---------------------------------------------------------------------------
-#   destroy:
-#     name: terraform destroy
-#     if: ${{ inputs.destroy }} #So it can only run when you tick the box
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v7
+  # DESTROY — commented out on purpose. To tear everything down, an admin uncomments this job, pushes, then runs the workflow manually with "destroy" ticked (Actions → terraform deployment → Run workflow).plan-apply and test are skipped on that run. Comment it out again afterwards.
+# ---------------------------------------------------------------------------
+  # destroy:
+  #   name: terraform destroy
+  #   if: ${{ inputs.destroy }} #So it can only run when you tick the box
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
   
-#       - uses: hashicorp/setup-terraform@v4
-#         with:
-#           terraform_version: ${{ env.TF_VERSION }}
-#           terraform_wrapper: false
+  #     - uses: hashicorp/setup-terraform@v4
+  #       with:
+  #         terraform_version: ${{ env.TF_VERSION }}
+  #         terraform_wrapper: false
   
-#       - uses: aws-actions/configure-aws-credentials@v6
-#         with:
-#           role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
-#           aws-region: ${{ env.AWS_REGION }}
-#       - name: terraform init
-#         run: terraform init
-#       - name: terraform destroy
-#         run: terraform destroy -auto-approve
+  #     - uses: aws-actions/configure-aws-credentials@v6
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
+  #         aws-region: ${{ env.AWS_REGION }}
+  #     - name: terraform init
+  #       run: terraform init
+  #     - name: terraform destroy
+  #       run: terraform destroy -auto-approve

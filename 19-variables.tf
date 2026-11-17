@@ -182,7 +182,7 @@ variable "efs_transition_to_ia" {
 variable "kubeconfig_bucket" {
   description = "S3 bucket where the admin kubeconfig is uploaded"
   type        = string
-  default     = "pod5-kubeconfig-916657620282" #TERRAFORM WILL CREATE THIS BUCKET, SO CHANGE THE NAME TO SOMETHING UNIQUE IF YOU WANT TO DEPLOY YOUR OWN CLUSTER
+  default     = "pod5-state-bucket-916657620282" #TERRAFORM WILL CREATE THIS BUCKET, SO CHANGE THE NAME TO SOMETHING UNIQUE IF YOU WANT TO DEPLOY YOUR OWN CLUSTER
 }
 
 variable "kubeconfig_s3_key" {

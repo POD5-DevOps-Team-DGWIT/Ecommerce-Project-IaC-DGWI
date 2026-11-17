@@ -192,7 +192,7 @@
 # # ---------------------------------------------------------------------------
 #   destroy:
 #     name: terraform destroy
-#     if: ${{ inputs.destroy }}
+#     if: ${{ inputs.destroy }} #So it can only run when you tick the box
 #     runs-on: ubuntu-latest
 #     steps:
 #       - uses: actions/checkout@v7

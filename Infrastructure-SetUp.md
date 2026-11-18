@@ -303,7 +303,7 @@ Docker is useful for local image builds and debugging, while the CI/CD pipeline 
 ```bash
 export KUBECONFIG=kubeconfig
 
-aws eks update-kubeconfig --region eu-west-2 --name Internship-Project-EKS
+aws eks update-kubeconfig --region eu-west-2 --name POD5-EKS
 ```
 
 This configures your local machine to talk to the EKS cluster.

@@ -298,9 +298,11 @@ Docker is useful for local image builds and debugging, while the CI/CD pipeline 
 
 ## 6. EKS cluster access and verification
 
-### Configure kubectl to reach the cluster
+### Configure kubectl to reach the cluster, firstly we need to export the 'kubeconfig' file from our s3bucket on aws 
 
 ```bash
+export KUBECONFIG=kubeconfig
+
 aws eks update-kubeconfig --region eu-west-2 --name Internship-Project-EKS
 ```
 

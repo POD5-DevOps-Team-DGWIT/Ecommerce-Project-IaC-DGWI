@@ -215,22 +215,22 @@ To work from a local machine, the following tools are needed:
 
 ### List Of Install i did on the infrastucture 
 
-<winget install -e --id Git.Git	
+>winget install -e --id Git.Git	
 git --version                       #Saves your project history and talks to GitHub
 
-<winget install Amazon.AWSCLI
+>winget install Amazon.AWSCLI
 aws --version                       #Lets your terminal talk to your AWS account
 
-<winget install -e --id Hashicorp.Terraform	
+>winget install -e --id Hashicorp.Terraform	
 terraform -v                        #Builds the AWS setup from your code files
 
-<winget install -e --id Kubernetes.kubectl	
+>winget install -e --id Kubernetes.kubectl	
 kubectl version --client            #The remote control for your Kubernetes cluster
 
-<winget install -e --id Helm.Helm   #Only to inspect or debug the installs inside the cluster, since Terraform already drives it
+>winget install -e --id Helm.Helm   #Only to inspect or debug the installs inside the cluster, since Terraform already drives it
 
-<winget install -e --id Docker.DockerDesktop  #To build and test images on your laptop. The pipeline builds the real ones.
-
+>winget install -e --id Docker.DockerDesktop  #To build and test images on your laptop. The pipeline builds the real ones.
+```
 ```bash
 aws --version
 aws configure
@@ -487,7 +487,7 @@ Apply complete! Resources:  56 added, 0 changed, 0 destroyed.
 ```
 On successful deployment, Terraform output includes values such as:
 
-```text
+```output terraform apply
 argocd_admin_username = "admin"
 argocd_initial_admin_password = <sensitive>
 argocd_url = "https://argocd.cloudbinocular.online"
@@ -497,7 +497,7 @@ eks_cluster_endpoint = "https://99A3EC8767A15968A907243DA4118B8B.gr7.eu-west-2.e
 eks_cluster_name = "Internship-Project-EKS"
 eks_cluster_version = "1.37"
 eks_node_group_name = "Internship-Project-EKS-nodes"
-kubeconfig_command = "aws eks update-kubeconfig --region eu-west-2 --name Internship-Project-EKS"
+kubeconfig_command = "aws eks update-kubeconfig --region eu-west-2 --name POD5-EKS"
 kubeconfig_download_command = "aws s3 cp s3://my-private-kubeconfig-191611156690/eks/kubeconfig ~/.kube/config"
 kubeconfig_s3_uri = "s3://my-private-kubeconfig-191611156690/eks/kubeconfig"
 load_balancer_hostname = "a0db7659bd17d4b26a30fc68cf80c440-bde6e852c6bf4758.elb.eu-west-2.amazonaws.com"
@@ -685,21 +685,21 @@ The core idea is simple:
 
 ## TO RUN TERRAFORM AGAIN DO THE FOLLOWING
 
-<aws sts get-caller-identity>               #Check you’re still signed in.
+<aws sts get-caller-identity               #Check you’re still signed in.
 
-<aws s3 ls | grep -E "internshipstate|kubeconfig"> #Check if your S3 buckets still exist. The one you created and the one you dont't have to create
+<aws s3 ls | grep -E "internshipstate|kubeconfig" #Check if your S3 buckets still exist. The one you created and the one you dont't have to create
 
-<terraform init>                            #Connect to the state box
+<terraform init                            #Connect to the state box
 
-<aws eks update-kubeconfig --region eu-west-2 --name Internship-Project-EKS>                                        #Connect to the new cluster.
+<aws eks update-kubeconfig --region eu-west-2 --name POD5-EKS>                                        #Connect to the new cluster.
 
 <kubectl get nodes 
 
-<terraform plan -out=tfplan>                #Make a new plan. Never reuse the old tfplan file
+<terraform plan -out=tfplan               #Make a new plan. Never reuse the old tfplan file
 
-<terraform apply "tfplan">                  #Build into your S3 bucket
+<terraform apply "tfplan"                 #Build into your S3 bucket
 
-<terraform output load_balancer_hostname>   #Get the new front door address. Remember you have to use the aws name to update the DNS record.
+<terraform output load_balancer_hostname   #Get the new front door address. Remember you have to use the aws name to update the DNS record.
 
 Steps: In Route 53 → Hosted zones → cloudbinocular.online, edit the argocd Alias record and pick the new load balancer in the dropdown. Why: it still points at the deleted one, so the site won’t open until you change it.
 
@@ -707,19 +707,19 @@ Steps: In Route 53 → Hosted zones → cloudbinocular.online, edit the argocd A
 
 <nslookup argocd.cloudbinocular.online 8.8.8.8
 
-<kubectl get certificate -A>                    #Wait for READY True, then open https://argocd.cloudbinocular.online. The password is new each time.
+<kubectl get certificate -A                   #Wait for READY True, then open https://argocd.cloudbinocular.online. The password is new each time.
 
-<terraform output -raw argocd_initial_admin_password>      #
+<terraform output -raw argocd_initial_admin_password      #
 
 <terraform apply tfplan
 
 <terraform destroy -auto-approve
 
-<terraform force-unlock e9e20f0e-34b2-66af-9de5-d975cecf31ba> #incase it doesn't destroy and the S3 lock the file, (The scary “412 PreconditionFailed” is just how S3 says “that lock file already exists.”
+<terraform force-unlock e9e20f0e-34b2-66af-9de5-d975cecf31ba #incase it doesn't destroy and the S3 lock the file, (The scary “412 PreconditionFailed” is just how S3 says “that lock file already exists.”
 
-<terraform state list>      #If the list is long, an earlier apply got partway through, so some resources may be running and costing money right now. If it’s empty or just a few lines, little was built.
+<terraform state list      #If the list is long, an earlier apply got partway through, so some resources may be running and costing money right now. If it’s empty or just a few lines, little was built.
 
-<terraform destroy>         #Run this finally
+<terraform destroy         #Run this finally
 
 ## ADD VPC FLOW LOG TO MY INFRASTRUCTURE
 
@@ -801,7 +801,7 @@ resource "aws_iam_role_policy" "example" {
 
 <terraform fmt
 
-<terraform validate>
+<terraform validate
 
 <terraform plan -out=tfplan
 
@@ -948,7 +948,7 @@ You should see Internship_flow_log with FlowLogStatus: ACTIVE.
 18. Wait 10 to 15 minutes, then check records are arriving.
 
 bash
-<aws logs describe-log-streams --log-group-name Internship_flow_log --region eu-west-2
+<aws logs describe-log-streams --log-group-name POD5_flow_log --region eu-west-2
 
 You should see log streams listed. In the console, open CloudWatch → Log groups → Internship_flow_log to read them.
 

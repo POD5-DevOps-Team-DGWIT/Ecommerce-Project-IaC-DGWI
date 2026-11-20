@@ -1,58 +1,76 @@
-# resource "aws_flow_log" "flow_log" {
-#   iam_role_arn    = aws_iam_role.flow_log.arn
-#   log_destination = aws_cloudwatch_log_group.flow_log.arn
-#   traffic_type    = "ALL"
-#   vpc_id          = aws_vpc.vpc.id
+# VPC Flow Log: records every network connection in the VPC (allowed and blocked)
+# and sends the records to a CloudWatch log group.
 
-#   tags = {
-#     Name = "pod5_flow_log" #Your desired name for your vpc, A label you can see on the console.
-#   }
-# }
+resource "aws_flow_log" "flow_log" {
+  iam_role_arn    = aws_iam_role.flow_log.arn
+  log_destination = aws_cloudwatch_log_group.flow_log.arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.vpc.id
 
-# resource "aws_cloudwatch_log_group" "flow_log" {
-#   name              = "pod5_flow_log"
-#   retention_in_days = 7 #Must be added, Without it, logs are kept forever and the CloudWatch bill slowly grows.
-# }
+  tags = {
+    Name = "pod5_flow_log" # A label you can see in the console.
+  }
+}
 
-# data "aws_iam_policy_document" "flow_log_assume_role" {
-#   statement {
-#     effect = "Allow"
+# The CloudWatch "folder" where the records are kept.
+resource "aws_cloudwatch_log_group" "flow_log" {
+  name              = "pod5_flow_log"
+  retention_in_days = 7 # Delete records after 7 days, so the CloudWatch bill does not keep growing.
+}
 
-#     principals {
-#       type        = "Service"
-#       identifiers = ["vpc-flow-logs.amazonaws.com"]
-#     }
+# Who may borrow the role: only the VPC Flow Logs service.
+data "aws_iam_policy_document" "flow_log_assume_role" {
+  statement {
+    effect = "Allow"
 
-#     actions = ["sts:AssumeRole"]
-#   }
-# }
+    principals {
+      type        = "Service"
+      identifiers = ["vpc-flow-logs.amazonaws.com"]
+    }
 
-# resource "aws_iam_role" "flow_log" {
-#   name               = "pod5_flow_log_role"
-#   assume_role_policy = data.aws_iam_policy_document.flow_log_assume_role.json
-# }
+    actions = ["sts:AssumeRole"]
+  }
+}
 
-# data "aws_iam_policy_document" "flow_log" {
-#   statement {
-#     effect = "Allow"
+resource "aws_iam_role" "flow_log" {
+  name               = "pod5_flow_log_role"
+  assume_role_policy = data.aws_iam_policy_document.flow_log_assume_role.json
+}
 
-#     actions = [
-#       "logs:CreateLogGroup",
-#       "logs:CreateLogStream",
-#       "logs:PutLogEvents",
-#       "logs:DescribeLogGroups",
-#       "logs:DescribeLogStreams",
-#     ]
+# What the role may do once borrowed.
+# There is no "logs:CreateLogGroup" on purpose: Terraform creates the log group,
+# so this role must not be able to re-create it after a destroy.
+data "aws_iam_policy_document" "flow_log" {
+  # Write records into THIS log group only.
+  statement {
+    effect = "Allow"
 
-#     resources = ["*"]
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
 
-#   }
-# }
-# #["*"] lets the role write to any log group in the AWS account. 
-# #Better and tighter permission is ["${aws_cloudwatch_log_group.flow_log.arn}:*"], which limits it to this one group.	Optional hardening though, and a good DevSecOps exercise.
+    resources = [
+      aws_cloudwatch_log_group.flow_log.arn,
+      "${aws_cloudwatch_log_group.flow_log.arn}:*",
+    ]
+  }
 
-# resource "aws_iam_role_policy" "flow_log" {
-#   name   = "pod5_flow_log_policy"
-#   role   = aws_iam_role.flow_log.id
-#   policy = data.aws_iam_policy_document.flow_log.json
-# }
+  # Lookups the flow log service makes before writing.
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams",
+    ]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "flow_log" {
+  name   = "pod5_flow_log_policy"
+  role   = aws_iam_role.flow_log.id
+  policy = data.aws_iam_policy_document.flow_log.json
+}
